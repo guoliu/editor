@@ -3,9 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "draft-convert": "^2.1.2",
+    "hint": "^2.0.0",
+    "install": "^0.11.0",
     "ipfs": "^0.29.2",
+    "medium-draft": "^0.5.6",
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
+    "react-dropzone": "^4.2.11",
     "react-router-dom": "^4.2.2",
     "react-scripts": "1.1.4"
   },
@@ -13,7 +18,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "prebuild": "cp webpack.config.prod.js node_modules/react-scripts/config",
+    "postbuild": "npx uglify-es build/static/js/main.*.js -c -m -o build/static/js/$(ls build/static/js | head -n 1)"
   },
   "resolutions": {
     "libp2p-switch": "libp2p/js-libp2p-switch#feat/swap-quick-lru"

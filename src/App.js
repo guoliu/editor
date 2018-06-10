@@ -3,6 +3,7 @@ import { Route, BrowserRouter as Router } from 'react-router-dom'
 import IPFS from 'ipfs'
 import Home from './home'
 import Article from './article'
+import Editor from './editor'
 
 const rootHash = 'QmanRgUyZfWaFWvtCKqB9kdb3YEoxvWuGDKjEeJHcDNAkU'
 
@@ -23,8 +24,9 @@ class App extends Component {
     const { ready, ipfs } = this.state
     return ready ? (
       <Router>
-        <div>
+        <div style={{ height: '100vh' }}>
           <Route exact path="/" component={Home} />
+          <Route path="/editor" render={() => <Editor ipfs={ipfs} />} />
           <Route
             path="/article/:articleURL"
             render={({ match }) => <Article rootHash={rootHash} ipfs={ipfs} articleURL={match.params.articleURL} />}
@@ -32,7 +34,7 @@ class App extends Component {
         </div>
       </Router>
     ) : (
-      <div>loading</div>
+      <div>loading...</div>
     )
   }
 }
