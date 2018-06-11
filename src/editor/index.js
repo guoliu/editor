@@ -1,44 +1,29 @@
 import React from 'react'
 import { ImageSideButton, Block, addNewBlock, createEditorState, Editor } from 'medium-draft'
 import 'medium-draft/lib/index.css'
+// import 'font-awesome/css/font-awesome.min.css'
 import styles from './styles'
 import 'isomorphic-fetch'
 
 class CustomImageSideButton extends ImageSideButton {
-  /*
-  We will only check for first file and also whether
-  it is an image or not.
-  */
   onChange(e) {
+    const { setEditorState } = this.props
     const file = e.target.files[0]
-    if (file.type.indexOf('image/') === 0) {
-      // This is a post request to server endpoint with image as `image`
-      const formData = new FormData()
-      formData.append('image', file)
-      fetch('/your-server-endpoint', {
-        method: 'POST',
-        body: formData
-      }).then(response => {
-        if (response.status === 200) {
-          // Assuming server responds with
-          // `{ "url": "http://example-cdn.com/image.jpg"}`
-          return response.json().then(data => {
-            if (data.url) {
-              this.props.setEditorState(
-                addNewBlock(this.props.getEditorState(), Block.IMAGE, {
-                  src: data.url
-                })
-              )
-            }
-          })
-        }
-      })
+
+    const reader = new FileReader()
+    reader.onload = e => {
+      setEditorState(
+        addNewBlock(this.props.getEditorState(), Block.IMAGE, {
+          src: e.target.result
+        })
+      )
     }
+
+    reader.readAsDataURL(file)
     this.props.close()
   }
 }
 
-// Now pass this component instead of default prop to Editor example above.
 class DraftEditor extends React.Component {
   constructor(props) {
     super(props)
@@ -51,14 +36,8 @@ class DraftEditor extends React.Component {
     ]
 
     this.state = {
-      editorState: createEditorState() // for empty content
+      editorState: createEditorState() // createEditorState(data) with content
     }
-
-    /*
-    this.state = {
-      editorState: createEditorState(data), // with content
-    };
-    */
 
     this.onChange = editorState => {
       this.setState({ editorState })
