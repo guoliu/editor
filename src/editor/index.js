@@ -1,15 +1,13 @@
 import React from 'react'
-import { ImageSideButton, Block, addNewBlock, createEditorState, Editor } from 'medium-draft'
+import { ImageSideButton, Block, addNewBlock, Editor } from 'medium-draft'
+import { EditorState, convertFromRaw, convertToRaw } from 'draft-js'
 import 'medium-draft/lib/index.css'
-// import 'font-awesome/css/font-awesome.min.css'
 import styles from './styles'
 import 'isomorphic-fetch'
 
 class CustomImageSideButton extends ImageSideButton {
-  onChange(e) {
+  onChange(upload) {
     const { setEditorState } = this.props
-    const file = e.target.files[0]
-
     const reader = new FileReader()
     reader.onload = e => {
       setEditorState(
@@ -18,8 +16,7 @@ class CustomImageSideButton extends ImageSideButton {
         })
       )
     }
-
-    reader.readAsDataURL(file)
+    Object.values(upload.target.files).map(file => reader.readAsDataURL(file))
     this.props.close()
   }
 }
@@ -36,7 +33,7 @@ class DraftEditor extends React.Component {
     ]
 
     this.state = {
-      editorState: createEditorState() // createEditorState(data) with content
+      editorState: null
     }
 
     this.onChange = editorState => {
@@ -44,16 +41,53 @@ class DraftEditor extends React.Component {
     }
   }
 
-  componentDidMount() {
-    this.refs.editor.focus()
+  saveVersion = async () => {
+    const { draft } = this.state
+    try {
+      await draft.add({
+        contentState: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent()))
+      })
+    } catch (err) {
+      console.error('error while saving draft version', err)
+    }
+  }
+
+  onKeyDown = e => {
+    if ((window.navigator.platform.match('Mac') ? e.metaKey : e.ctrlKey) && e.keyCode === 83) {
+      e.preventDefault()
+      this.saveVersion()
+      return true
+    }
+    return false
+  }
+
+  async componentDidMount() {
+    // load database
+    const { draftAddress } = this.props
+    const draft = await window.orbitdb.eventlog(`/${draftAddress}`)
+    await draft.load()
+
+    // get content state and initiate editor state
+    const rawContentState = draft
+      .iterator({ limit: 1 })
+      .collect()
+      .map(e => e.payload.value.contentState)[0]
+    this.setState(
+      { draft, editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(rawContentState))) },
+      () => this.refs.editor.focus()
+    )
   }
 
   render() {
     const { editorState } = this.state
     return (
       <div style={styles.draftContainer}>
-        <div style={styles.draft}>
-          <Editor ref="editor" editorState={editorState} onChange={this.onChange} sideButtons={this.sideButtons} />
+        <div style={styles.draft} onKeyDown={this.onKeyDown}>
+          {editorState ? (
+            <Editor ref="editor" editorState={editorState} onChange={this.onChange} sideButtons={this.sideButtons} />
+          ) : (
+            <div ref="editor">{'initiating'}</div>
+          )}
         </div>
       </div>
     )

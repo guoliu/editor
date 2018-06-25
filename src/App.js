@@ -1,38 +1,55 @@
 import React, { Component } from 'react'
-import { Route, BrowserRouter as Router } from 'react-router-dom'
+import { Route, Switch } from 'react-router-dom'
 import IPFS from 'ipfs'
+import OrbitDB from 'orbit-db'
 import Home from './home'
 import Article from './article'
 import Editor from './editor'
+import NewDraft from './newDraft'
 
-const rootHash = 'QmanRgUyZfWaFWvtCKqB9kdb3YEoxvWuGDKjEeJHcDNAkU'
-
+const ipfsOptions = {
+  EXPERIMENTAL: {
+    pubsub: true
+  },
+  config: {
+    Addresses: {
+      Swarm: [
+        // Use IPFS dev signal server
+        // '/dns4/star-signal.cloud.ipfs.team/wss/p2p-webrtc-star',
+        '/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star'
+        // Use local signal server
+        // '/ip4/0.0.0.0/tcp/9090/wss/p2p-webrtc-star',
+      ]
+    }
+  }
+}
 class App extends Component {
-  state = { ready: false, ipfs: null }
+  state = { ready: false }
 
   componentWillMount() {
-    const ipfs = new IPFS()
+    const ipfs = new IPFS(ipfsOptions)
     ipfs.on('error', errorObject => console.error(errorObject))
 
     ipfs.on('ready', () => {
       console.log('ipfs ready')
-      this.setState({ ready: true, ipfs })
+      window.orbitdb = new OrbitDB(ipfs)
+      window.ipfs = ipfs
+      this.setState({ ready: true })
     })
   }
 
   render() {
-    const { ready, ipfs } = this.state
+    const { ready } = this.state
     return ready ? (
-      <Router>
-        <div style={{ height: '100vh' }}>
-          <Route exact path="/" component={Home} />
-          <Route path="/editor" render={() => <Editor ipfs={ipfs} />} />
-          <Route
-            path="/article/:articleURL"
-            render={({ match }) => <Article rootHash={rootHash} ipfs={ipfs} articleURL={match.params.articleURL} />}
-          />
-        </div>
-      </Router>
+      <Switch>
+        <Route exact path="/" component={Home} />
+        <Route exact path="/draft" render={() => <NewDraft />} />
+        <Route
+          path="/draft/:draftAddress*"
+          render={({ match }) => <Editor draftAddress={match.params.draftAddress} />}
+        />
+        <Route path="/article/:articleURL" render={({ match }) => <Article articleURL={match.params.articleURL} />} />
+      </Switch>
     ) : (
       <div>loading...</div>
     )

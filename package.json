@@ -3,11 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "draft-convert": "^2.1.2",
-    "hint": "^2.0.0",
-    "install": "^0.11.0",
     "ipfs": "^0.29.2",
     "medium-draft": "^0.5.6",
+    "orbit-db": "^0.19.8",
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
     "react-dropzone": "^4.2.11",
