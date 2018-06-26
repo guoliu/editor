@@ -7,8 +7,9 @@ class NewDraft extends React.Component {
   state = { draft: null }
 
   async componentDidMount() {
-    // create store for a new draft
-    const draft = await window.orbitdb.eventlog('test', {
+    // create store for a new draft, named by timestamp
+    const draftId = btoa(Date.now())
+    const draft = await window.orbitdb.eventlog(draftId, {
       write: ['*']
     })
 
