@@ -42,7 +42,7 @@ class App extends Component {
     const { ready } = this.state
     return ready ? (
       <Switch>
-        <Route exact path="/" component={Home} />
+        <Route exact path="/" render={() => <NewDraft /> />
         <Route exact path="/draft" render={() => <NewDraft />} />
         <Route
           path="/draft/:draftAddress*"
