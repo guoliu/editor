@@ -18,14 +18,10 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "deploy": "gh-pages -d build",
     "prebuild": "cp webpack.config.prod.js node_modules/react-scripts/config",
     "postbuild": "npx uglify-es build/static/js/main.*.js --compress unused=false -m -o build/static/js/$(ls build/static/js | head -n 1)"
   },
   "resolutions": {
     "libp2p-switch": "libp2p/js-libp2p-switch#feat/swap-quick-lru"
-  },
-  "devDependencies": {
-    "gh-pages": "^1.2.0"
   }
 }
