@@ -72,9 +72,15 @@ class DraftEditor extends React.Component {
       .iterator({ limit: 1 })
       .collect()
       .map(e => e.payload.value.contentState)[0]
-    this.setState(
-      { draft, editorState: EditorState.createWithContent(convertFromRaw(JSON.parse(rawContentState))) },
-      () => this.refs.editor.focus()
+    let content
+    try {
+      content = JSON.parse(rawContentState)
+    } catch (err) {
+      console.error({ err, rawContentState })
+    }
+
+    this.setState({ draft, editorState: EditorState.createWithContent(convertFromRaw(content)) }, () =>
+      this.refs.editor.focus()
     )
   }
 
