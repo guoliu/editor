@@ -22,40 +22,52 @@ class CustomImageSideButton extends ImageSideButton {
 }
 
 class DraftEditor extends React.Component {
-  constructor(props) {
-    super(props)
-
-    this.sideButtons = [
-      {
-        title: 'Image',
-        component: CustomImageSideButton
-      }
-    ]
-
-    this.state = {
-      editorState: null
+  sideButtons = [
+    {
+      title: 'Image',
+      component: CustomImageSideButton
     }
+  ]
 
-    this.onChange = editorState => {
-      this.setState({ editorState })
-    }
+  state = {
+    editorState: null
   }
 
-  saveVersion = async () => {
-    const { draft } = this.state
-    try {
-      await draft.add({
-        contentState: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent()))
-      })
-    } catch (err) {
-      console.error('error while saving draft version', err)
-    }
+  onChange = editorState => {
+    this.setState({ editorState })
+  }
+
+  getSnapshots = limit => {
+    const rawContentStates = this.state.draft
+      .iterator({ limit })
+      .collect()
+      .map(e => e.payload.value.contentState)
+
+    const snapshots = rawContentStates.map(rawContentState => {
+      let content
+      try {
+        content = JSON.parse(rawContentState)
+      } catch (err) {
+        console.error({ err, rawContentState })
+      }
+      return convertFromRaw(content)
+    })
+
+    return snapshots
+  }
+
+  saveSnapshot = async () => {
+    const hash = await this.state.draft.add({
+      contentState: JSON.stringify(convertToRaw(this.state.editorState.getCurrentContent()))
+    })
+    console.log('save')
+    return hash
   }
 
   onKeyDown = e => {
     if ((window.navigator.platform.match('Mac') ? e.metaKey : e.ctrlKey) && e.keyCode === 83) {
       e.preventDefault()
-      this.saveVersion()
+      this.saveSnapshot()
       return true
     }
     return false
@@ -65,23 +77,19 @@ class DraftEditor extends React.Component {
     // load database
     const { draftAddress } = this.props
     const draft = await window.orbitdb.eventlog(`/${draftAddress}`)
+    this.setState({ draft })
     await draft.load()
+    draft.events.on('replicated', () => {
+      console.log('replicated')
+      const content = this.getSnapshots(1)[0]
+      this.setState({
+        editorState: EditorState.createWithContent(content)
+      })
+    })
 
     // get content state and initiate editor state
-    const rawContentState = draft
-      .iterator({ limit: 1 })
-      .collect()
-      .map(e => e.payload.value.contentState)[0]
-    let content
-    try {
-      content = JSON.parse(rawContentState)
-    } catch (err) {
-      console.error({ err, rawContentState })
-    }
-
-    this.setState({ draft, editorState: EditorState.createWithContent(convertFromRaw(content)) }, () =>
-      this.refs.editor.focus()
-    )
+    const content = this.getSnapshots(1)[0]
+    this.setState({ editorState: EditorState.createWithContent(content) }, () => this.refs.editor.focus())
   }
 
   render() {
