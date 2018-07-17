@@ -3,9 +3,8 @@ import { Route, Switch } from 'react-router-dom'
 import IPFS from 'ipfs'
 import OrbitDB from 'orbit-db'
 // import Home from './home'
-import Article from './article'
 import Editor from './editor'
-import NewDraft from './newDraft'
+import CreateDraft from './createDraft'
 
 const ipfsOptions = {
   EXPERIMENTAL: {
@@ -42,13 +41,12 @@ class App extends Component {
     const { ready } = this.state
     return ready ? (
       <Switch>
-        <Route exact path="/" render={() => <NewDraft />} />
-        <Route exact path="/draft" render={() => <NewDraft />} />
+        <Route exact path="/" render={() => <CreateDraft />} />
+        <Route exact path="/draft" render={() => <CreateDraft />} />
         <Route
           path="/draft/:draftAddress*"
           render={({ match }) => <Editor draftAddress={match.params.draftAddress} />}
         />
-        <Route path="/article/:articleURL" render={({ match }) => <Article articleURL={match.params.articleURL} />} />
       </Switch>
     ) : (
       <div>loading...</div>
