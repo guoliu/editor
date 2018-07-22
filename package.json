@@ -5,16 +5,16 @@
   "private": true,
   "dependencies": {
     "immutable": "^3.8.2",
-    "ipfs": "^0.29.2",
+    "ipfs": "^0.30.1",
     "orbit-db": "^0.19.8",
     "p5": "^0.6.1",
-    "react": "^16.4.0",
-    "react-dom": "^16.4.0",
-    "react-dropzone": "^4.2.11",
-    "react-router-dom": "^4.2.2",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "react-dropzone": "^4.2.13",
+    "react-router-dom": "^4.3.1",
     "react-scripts": "1.1.4",
-    "slate": "^0.34.5",
-    "slate-react": "^0.13.2"
+    "slate": "^0.34.6",
+    "slate-react": "^0.13.3"
   },
   "scripts": {
     "start": "react-scripts start",
